@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { Video, BookOpen, Play, Filter, ArrowRight, GraduationCap, FolderOpen, ChevronLeft } from "lucide-react";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -53,12 +53,92 @@ function VideosPageContent() {
     fetchCourseCategories();
   }, []);
 
+  const fetchVideos = useCallback(async () => {
+    if (!selectedLevel) return;
+    
+    try {
+      let videosQuery;
+      if (selectedCategory) {
+        videosQuery = query(
+          collection(db, "videos"),
+          where("level", "==", selectedLevel),
+          where("category", "==", selectedCategory)
+        );
+      } else {
+        videosQuery = query(
+          collection(db, "videos"),
+          where("level", "==", selectedLevel)
+        );
+      }
+      const snapshot = await getDocs(videosQuery);
+      let videosData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as VideoItem[];
+      
+      // ترتيب البيانات في JavaScript حسب createdAt
+      videosData.sort((a, b) => {
+        const aDate = (a as any).createdAt?.toMillis?.() || 
+                     ((a as any).createdAt?.seconds ? (a as any).createdAt.seconds * 1000 : 0) ||
+                     0;
+        const bDate = (b as any).createdAt?.toMillis?.() || 
+                     ((b as any).createdAt?.seconds ? (b as any).createdAt.seconds * 1000 : 0) ||
+                     0;
+        return bDate - aDate; // ترتيب تنازلي (الأحدث أولاً)
+      });
+      
+      setVideos(videosData);
+    } catch (error) {
+      console.error("Error fetching videos:", error);
+    }
+  }, [selectedLevel, selectedCategory]);
+
+  const fetchCourses = useCallback(async () => {
+    if (!selectedLevel) return;
+    
+    try {
+      let coursesQuery;
+      if (selectedCategory) {
+        coursesQuery = query(
+          collection(db, "courses"),
+          where("level", "==", selectedLevel),
+          where("category", "==", selectedCategory)
+        );
+      } else {
+        coursesQuery = query(
+          collection(db, "courses"),
+          where("level", "==", selectedLevel)
+        );
+      }
+      const snapshot = await getDocs(coursesQuery);
+      let coursesData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as VideoItem[];
+      
+      // ترتيب البيانات في JavaScript حسب createdAt
+      coursesData.sort((a, b) => {
+        const aDate = (a as any).createdAt?.toMillis?.() || 
+                     ((a as any).createdAt?.seconds ? (a as any).createdAt.seconds * 1000 : 0) ||
+                     0;
+        const bDate = (b as any).createdAt?.toMillis?.() || 
+                     ((b as any).createdAt?.seconds ? (b as any).createdAt.seconds * 1000 : 0) ||
+                     0;
+        return bDate - aDate; // ترتيب تنازلي (الأحدث أولاً)
+      });
+      
+      setCourses(coursesData);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  }, [selectedLevel, selectedCategory]);
+
   useEffect(() => {
     if (selectedLevel) {
       fetchVideos();
       fetchCourses();
     }
-  }, [selectedLevel, selectedCategory, activeTab]);
+  }, [selectedLevel, selectedCategory, activeTab, fetchVideos, fetchCourses]);
 
   // إعادة تعيين التصنيف عند تغيير الـ tab إذا لم يكن موجوداً في التصنيفات الجديدة
   useEffect(() => {
@@ -141,85 +221,6 @@ function VideosPageContent() {
     }
   };
 
-  const fetchVideos = async () => {
-    if (!selectedLevel) return;
-    
-    try {
-      let videosQuery;
-      if (selectedCategory) {
-        videosQuery = query(
-          collection(db, "videos"),
-          where("level", "==", selectedLevel),
-          where("category", "==", selectedCategory)
-        );
-      } else {
-        videosQuery = query(
-          collection(db, "videos"),
-          where("level", "==", selectedLevel)
-        );
-      }
-      const snapshot = await getDocs(videosQuery);
-      let videosData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as VideoItem[];
-      
-      // ترتيب البيانات في JavaScript حسب createdAt
-      videosData.sort((a, b) => {
-        const aDate = (a as any).createdAt?.toMillis?.() || 
-                     ((a as any).createdAt?.seconds ? (a as any).createdAt.seconds * 1000 : 0) ||
-                     0;
-        const bDate = (b as any).createdAt?.toMillis?.() || 
-                     ((b as any).createdAt?.seconds ? (b as any).createdAt.seconds * 1000 : 0) ||
-                     0;
-        return bDate - aDate; // ترتيب تنازلي (الأحدث أولاً)
-      });
-      
-      setVideos(videosData);
-    } catch (error) {
-      console.error("Error fetching videos:", error);
-    }
-  };
-
-  const fetchCourses = async () => {
-    if (!selectedLevel) return;
-    
-    try {
-      let coursesQuery;
-      if (selectedCategory) {
-        coursesQuery = query(
-          collection(db, "courses"),
-          where("level", "==", selectedLevel),
-          where("category", "==", selectedCategory)
-        );
-      } else {
-        coursesQuery = query(
-          collection(db, "courses"),
-          where("level", "==", selectedLevel)
-        );
-      }
-      const snapshot = await getDocs(coursesQuery);
-      let coursesData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as VideoItem[];
-      
-      // ترتيب البيانات في JavaScript حسب createdAt
-      coursesData.sort((a, b) => {
-        const aDate = (a as any).createdAt?.toMillis?.() || 
-                     ((a as any).createdAt?.seconds ? (a as any).createdAt.seconds * 1000 : 0) ||
-                     0;
-        const bDate = (b as any).createdAt?.toMillis?.() || 
-                     ((b as any).createdAt?.seconds ? (b as any).createdAt.seconds * 1000 : 0) ||
-                     0;
-        return bDate - aDate; // ترتيب تنازلي (الأحدث أولاً)
-      });
-      
-      setCourses(coursesData);
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-    }
-  };
 
   const handleLevelSelect = (levelId: string) => {
     setSelectedLevel(levelId);

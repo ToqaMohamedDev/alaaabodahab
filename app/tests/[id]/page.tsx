@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc, collection, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
@@ -65,29 +65,7 @@ export default function TestPage() {
   const [existingResult, setExistingResult] = useState<any>(null);
   const [checkingExistingResult, setCheckingExistingResult] = useState(false);
 
-  useEffect(() => {
-    if (!loadingAuth) {
-      fetchTest();
-    }
-  }, [testId, loadingAuth]);
-
-  useEffect(() => {
-    if (testStarted && timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            handleSubmitTest();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [testStarted, timeRemaining]);
-
-  const fetchTest = async () => {
+  const fetchTest = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -121,7 +99,13 @@ export default function TestPage() {
       setError("حدث خطأ أثناء جلب بيانات الاختبار");
       setLoading(false);
     }
-  };
+  }, [testId, user]);
+
+  useEffect(() => {
+    if (!loadingAuth) {
+      fetchTest();
+    }
+  }, [loadingAuth, fetchTest]);
 
   const checkExistingResult = async (userId: string) => {
     try {
@@ -313,7 +297,7 @@ export default function TestPage() {
     }
   };
 
-  const handleSubmitTest = async () => {
+  const handleSubmitTest = useCallback(async () => {
     if (!user || !test) return;
 
     setSavingResult(true);
@@ -364,7 +348,7 @@ export default function TestPage() {
     } finally {
       setSavingResult(false);
     }
-  };
+  }, [user, testId, questions, answers, test]);
 
   if (loading || loadingAuth || checkingExistingResult) {
     return (

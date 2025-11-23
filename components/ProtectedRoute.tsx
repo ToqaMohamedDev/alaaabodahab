@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "@/lib/firebase";
@@ -15,18 +15,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [checkingData, setCheckingData] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/login");
-      return;
-    }
-
-    if (user) {
-      checkUserData();
-    }
-  }, [user, loading, router]);
-
-  const checkUserData = async () => {
+  const checkUserData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -57,7 +46,18 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
         router.push("/auth/login");
       }
     }
-  };
+  }, [user, router]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (user) {
+      checkUserData();
+    }
+  }, [user, loading, router, checkUserData]);
 
   if (loading || checkingData) {
     return (

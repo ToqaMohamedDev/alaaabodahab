@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User, Mail, Award, BookOpen, TrendingUp, LogOut, Edit, MessageSquare, Calendar, Copy, Check } from "lucide-react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "@/lib/firebase";
@@ -109,18 +109,7 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/login");
-      return;
-    }
-
-    if (user) {
-      checkUserData();
-    }
-  }, [user, loading]);
-
-  const checkUserData = async () => {
+  const checkUserData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -155,7 +144,18 @@ export default function ProfilePage() {
         router.push("/auth/login");
       }
     }
-  };
+  }, [user, router]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (user) {
+      checkUserData();
+    }
+  }, [user, loading, checkUserData, router]);
 
   const fetchUserData = async () => {
     if (!user) return;
@@ -423,26 +423,26 @@ export default function ProfilePage() {
                 <div className="relative inline-block mb-4">
                   {userData?.photoURL ? (
                     <>
-                      <img
-                        src={userData.photoURL}
-                        alt={userData.name}
-                        className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-primary-200 dark:border-primary-800 avatar-image"
-                        onError={(e) => {
-                          // إذا فشل تحميل الصورة، نعرض الحرف الأول
-                          e.currentTarget.style.display = "none";
-                          const parent = e.currentTarget.parentElement;
-                          if (parent) {
-                            const fallback = parent.querySelector(".avatar-fallback");
+                      <div className="relative w-32 h-32 mx-auto">
+                        <Image
+                          src={userData.photoURL}
+                          alt={userData.name}
+                          width={128}
+                          height={128}
+                          className="w-32 h-32 rounded-full object-cover border-4 border-primary-200 dark:border-primary-800"
+                          onError={() => {
+                            // إذا فشل تحميل الصورة، نعرض الحرف الأول
+                            const fallback = document.querySelector(".avatar-fallback");
                             if (fallback) {
                               (fallback as HTMLElement).style.display = "flex";
                             }
-                          }
-                        }}
-                      />
-                      <div
-                        className={`avatar-fallback w-32 h-32 rounded-full mx-auto flex items-center justify-center text-white text-4xl font-bold border-4 border-primary-200 dark:border-primary-800 hidden ${getAvatarColor(userData?.name || "م")}`}
-                      >
-                        {getInitials(userData?.name || "م")}
+                          }}
+                        />
+                        <div
+                          className={`avatar-fallback absolute inset-0 w-32 h-32 rounded-full mx-auto flex items-center justify-center text-white text-4xl font-bold border-4 border-primary-200 dark:border-primary-800 hidden ${getAvatarColor(userData?.name || "م")}`}
+                        >
+                          {getInitials(userData?.name || "م")}
+                        </div>
                       </div>
                     </>
                   ) : (

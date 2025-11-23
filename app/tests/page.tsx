@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { FileText, Clock, Play, Award, CheckCircle, GraduationCap, ChevronLeft, ArrowRight } from "lucide-react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -37,11 +37,39 @@ function TestsPageContent() {
     fetchEducationalLevels();
   }, []);
 
+  const fetchTests = useCallback(async () => {
+    if (!selectedLevel) return;
+
+    try {
+      // استخدام where فقط بدون orderBy لتجنب الحاجة إلى index
+      const testsQuery = query(
+        collection(db, "tests"),
+        where("level", "==", selectedLevel)
+      );
+      const snapshot = await getDocs(testsQuery);
+      const testsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Test[];
+      
+      // ترتيب البيانات في JavaScript حسب createdAt
+      testsData.sort((a, b) => {
+        const aDate = (a as any).createdAt?.toMillis?.() || 0;
+        const bDate = (b as any).createdAt?.toMillis?.() || 0;
+        return bDate - aDate; // ترتيب تنازلي (الأحدث أولاً)
+      });
+      
+      setTests(testsData);
+    } catch (error) {
+      console.error("Error fetching tests:", error);
+    }
+  }, [selectedLevel]);
+
   useEffect(() => {
     if (selectedLevel) {
       fetchTests();
     }
-  }, [selectedLevel]);
+  }, [selectedLevel, fetchTests]);
 
   const fetchEducationalLevels = async () => {
     try {
@@ -85,33 +113,6 @@ function TestsPageContent() {
     }
   };
 
-  const fetchTests = async () => {
-    if (!selectedLevel) return;
-
-    try {
-      // استخدام where فقط بدون orderBy لتجنب الحاجة إلى index
-      const testsQuery = query(
-        collection(db, "tests"),
-        where("level", "==", selectedLevel)
-      );
-      const snapshot = await getDocs(testsQuery);
-      const testsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Test[];
-      
-      // ترتيب البيانات في JavaScript حسب createdAt
-      testsData.sort((a, b) => {
-        const aDate = (a as any).createdAt?.toMillis?.() || 0;
-        const bDate = (b as any).createdAt?.toMillis?.() || 0;
-        return bDate - aDate; // ترتيب تنازلي (الأحدث أولاً)
-      });
-      
-      setTests(testsData);
-    } catch (error) {
-      console.error("Error fetching tests:", error);
-    }
-  };
 
   const handleLevelSelect = (levelId: string) => {
     setSelectedLevel(levelId);

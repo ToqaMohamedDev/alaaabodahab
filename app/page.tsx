@@ -414,7 +414,6 @@ export default function Home() {
                         <div className="relative w-full h-full">
                           <Image
                             src="/images/alaaabdahab.png"
-                            loading="eager"
                             priority
                             quality={90}
                             alt="علاء أبو الدهب"
@@ -422,7 +421,6 @@ export default function Home() {
                             height={500}
                             className="w-full h-full object-cover object-top transform md:-skew-x-3 md:skew-y-1"
                             style={{ objectPosition: 'top center' }}
-                            priority
                           />
                         </div>
                       </div>

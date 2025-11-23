@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -42,13 +42,7 @@ export default function VideoPage() {
   const [hasAccess, setHasAccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!loadingAuth) {
-      fetchVideo();
-    }
-  }, [videoId, loadingAuth]);
-
-  const fetchVideo = async () => {
+  const fetchVideo = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -81,7 +75,13 @@ export default function VideoPage() {
       setError("حدث خطأ أثناء جلب بيانات الفيديو");
       setLoading(false);
     }
-  };
+  }, [videoId, user]);
+
+  useEffect(() => {
+    if (!loadingAuth) {
+      fetchVideo();
+    }
+  }, [loadingAuth, fetchVideo]);
 
   const checkAndFetchPrivateSource = async (currentUser: any, levelId: string) => {
     try {
