@@ -270,7 +270,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden max-w-full w-full">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 dark:from-primary-800 dark:via-primary-900 dark:to-gray-900 text-white py-24 md:py-32 lg:py-40 overflow-hidden min-h-[600px] md:min-h-[700px] lg:min-h-[800px]">
         {/* Animated Background */}

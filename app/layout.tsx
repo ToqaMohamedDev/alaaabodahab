@@ -73,7 +73,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning className="overflow-x-hidden">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -115,13 +115,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${cairo.className} overflow-x-hidden max-w-full`}>
+      <body className={cairo.className}>
         <ThemeProvider>
-          <div className="overflow-x-hidden max-w-full w-full">
-            <Navbar />
-            <main className="bg-gray-50 dark:bg-gray-900 overflow-x-hidden max-w-full w-full">{children}</main>
-            <Footer />
-          </div>
+          <Navbar />
+          <main className="bg-gray-50 dark:bg-gray-900">{children}</main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

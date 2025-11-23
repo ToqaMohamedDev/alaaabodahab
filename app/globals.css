@@ -11,8 +11,6 @@
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
-    max-width: 100vw;
-    width: 100%;
   }
   
   body {
@@ -22,9 +20,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
-    max-width: 100vw;
-    width: 100%;
-    position: relative;
   }
   
   /* Improve focus visibility */
@@ -90,16 +85,10 @@
     @apply bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-105 active:scale-95;
   }
   
-  /* Prevent horizontal overflow */
+  /* Prevent horizontal overflow for media elements */
   img, video, iframe, embed, object {
     max-width: 100%;
     height: auto;
-  }
-  
-  /* Ensure containers don't overflow */
-  .container, .max-w-7xl, .max-w-6xl, .max-w-5xl, .max-w-4xl, .max-w-3xl, .max-w-2xl, .max-w-xl {
-    max-width: 100%;
-    width: 100%;
   }
 }
 
