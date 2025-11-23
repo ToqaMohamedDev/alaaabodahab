@@ -17,6 +17,7 @@ const Navbar = () => {
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("light");
   const [user, loading] = useAuthState(auth);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   // Sync with actual DOM state
   useEffect(() => {
@@ -58,6 +59,30 @@ const Navbar = () => {
       checkAdminStatus();
     }
   }, [user, loading]);
+
+  // Scroll progress tracking
+  useEffect(() => {
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollableHeight = documentHeight - windowHeight;
+      
+      if (scrollableHeight > 0) {
+        const progress = (scrollTop / scrollableHeight) * 100;
+        setScrollProgress(Math.min(100, Math.max(0, progress)));
+      } else {
+        setScrollProgress(0);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Initial call
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const handleToggle = () => {
     console.log("🔄 Toggle clicked! Current theme:", theme);
@@ -104,6 +129,22 @@ const Navbar = () => {
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg dark:shadow-gray-900/50 sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50"
     >
+      {/* Progress Bar */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-800 z-50">
+        <motion.div
+          className="h-full bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 dark:from-primary-400 dark:via-primary-500 dark:to-primary-600 shadow-lg shadow-primary-500/50"
+          style={{
+            width: `${scrollProgress}%`,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 100,
+            damping: 30,
+            mass: 0.5,
+          }}
+        />
+      </div>
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link href="/" className="flex items-center space-x-3 space-x-reverse group">
