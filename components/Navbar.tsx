@@ -127,7 +127,7 @@ const Navbar = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg dark:shadow-gray-900/50 sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50"
+      className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg dark:shadow-gray-900/50 sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50 overflow-x-hidden max-w-full w-full"
     >
       {/* Progress Bar */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-800 z-50">

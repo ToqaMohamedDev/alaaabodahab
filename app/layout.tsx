@@ -64,6 +64,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({
@@ -72,7 +73,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning className="overflow-x-hidden">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -114,11 +115,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={cairo.className}>
+      <body className={`${cairo.className} overflow-x-hidden max-w-full`}>
         <ThemeProvider>
-          <Navbar />
-          <main className="bg-gray-50 dark:bg-gray-900">{children}</main>
-          <Footer />
+          <div className="overflow-x-hidden max-w-full w-full">
+            <Navbar />
+            <main className="bg-gray-50 dark:bg-gray-900 overflow-x-hidden max-w-full w-full">{children}</main>
+            <Footer />
+          </div>
         </ThemeProvider>
       </body>
     </html>
