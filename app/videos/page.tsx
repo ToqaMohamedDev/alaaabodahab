@@ -270,27 +270,29 @@ function VideosPageContent() {
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ y: -10, scale: 1.02 }}
                   onClick={() => handleLevelSelect(level.id)}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 p-8 border border-gray-200 dark:border-gray-700 card-hover cursor-pointer group"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 overflow-hidden border border-gray-200 dark:border-gray-700 card-hover cursor-pointer group"
                 >
-                  <div className="text-center">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      className="mb-4 relative w-full h-48 mx-auto rounded-xl overflow-hidden shadow-lg"
-                    >
-                      {level.imageUrl ? (
-                        <Image
-                          src={level.imageUrl}
-                          alt={level.name}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                          <GraduationCap className="h-20 w-20 text-primary-600 dark:text-primary-400" />
-                        </div>
-                      )}
-                    </motion.div>
+                  {/* Image Section - Full Width Top */}
+                  <div className="relative w-full h-48 overflow-hidden">
+                    {level.imageUrl ? (
+                      <Image
+                        src={level.imageUrl}
+                        alt={level.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        loading="lazy"
+                        quality={85}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                        <GraduationCap className="h-20 w-20 text-primary-600 dark:text-primary-400" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Content Section */}
+                  <div className="p-6 text-center">
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                       {level.name}
                     </h3>

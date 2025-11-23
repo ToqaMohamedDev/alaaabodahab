@@ -3,8 +3,8 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { BookOpen, Video, FileText, ArrowLeft, GraduationCap, Award, Users, Play, Clock, TrendingUp, Star, CheckCircle, Sparkles, Lightbulb, Target, Layers, BarChart3, Heart, Users2, Youtube, Instagram, Facebook, MessageCircle, Music } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { BookOpen, Video, FileText, ArrowLeft, GraduationCap, Award, Users, Play, Clock, TrendingUp, Star, CheckCircle, Sparkles, Lightbulb, Target, Layers, BarChart3, Heart, Users2, Youtube, Instagram, Facebook, MessageCircle, Music, BookText, PenTool, BookMarked, School, BookCheck } from "lucide-react";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -14,12 +14,27 @@ interface Category {
   videoCount?: number;
 }
 
+interface EducationalLevel {
+  id: string;
+  name: string;
+  imageUrl?: string;
+}
+
 export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [educationalLevels, setEducationalLevels] = useState<EducationalLevel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statsData, setStatsData] = useState({
+    videosCount: 0,
+    coursesCount: 0,
+    testsCount: 0,
+    activeStudents: 0,
+  });
 
   useEffect(() => {
     fetchCategories();
+    fetchStats();
+    fetchEducationalLevels();
   }, []);
 
   const fetchCategories = async () => {
@@ -44,6 +59,115 @@ export default function Home() {
       console.error("Error fetching categories:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEducationalLevels = async () => {
+    try {
+      const levelsSnapshot = await getDocs(collection(db, "educationalLevels"));
+      const levelsData = levelsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as EducationalLevel[];
+      
+      // ترتيب حسب createdAt أو updatedAt
+      levelsData.sort((a, b) => {
+        const aData = a as any;
+        const bData = b as any;
+        const aDate = aData.createdAt?.toMillis?.() || 
+                     (aData.createdAt?.seconds ? aData.createdAt.seconds * 1000 : 0) ||
+                     (aData.updatedAt?.toMillis?.() || 
+                      (aData.updatedAt?.seconds ? aData.updatedAt.seconds * 1000 : 0) || 0);
+        const bDate = bData.createdAt?.toMillis?.() || 
+                     (bData.createdAt?.seconds ? bData.createdAt.seconds * 1000 : 0) ||
+                     (bData.updatedAt?.toMillis?.() || 
+                      (bData.updatedAt?.seconds ? bData.updatedAt.seconds * 1000 : 0) || 0);
+        return bDate - aDate; // ترتيب تنازلي (الأحدث أولاً)
+      });
+      
+      setEducationalLevels(levelsData);
+    } catch (error) {
+      console.error("Error fetching educational levels:", error);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      // جلب عدد الفيديوهات
+      let videosCount = 0;
+      try {
+        const videosSnapshot = await getDocs(collection(db, "videos"));
+        videosCount = videosSnapshot.size;
+        console.log("Videos count:", videosCount);
+      } catch (error) {
+        console.error("Error fetching videos count:", error);
+      }
+
+      // جلب عدد الكورسات
+      let coursesCount = 0;
+      try {
+        const coursesSnapshot = await getDocs(collection(db, "courses"));
+        coursesCount = coursesSnapshot.size;
+        console.log("Courses count:", coursesCount, "Total docs:", coursesSnapshot.docs.length);
+        // طباعة تفاصيل الكورسات للتحقق
+        coursesSnapshot.docs.forEach((doc, index) => {
+          console.log(`Course ${index + 1}:`, doc.id, doc.data());
+        });
+      } catch (error) {
+        console.error("Error fetching courses count:", error);
+      }
+
+      // جلب عدد الاختبارات
+      let testsCount = 0;
+      try {
+        const testsSnapshot = await getDocs(collection(db, "tests"));
+        testsCount = testsSnapshot.size;
+        console.log("Tests count:", testsCount);
+      } catch (error) {
+        console.error("Error fetching tests count:", error);
+      }
+
+      // جلب عدد الطلاب النشطين (من subscriptions)
+      let activeStudents = 0;
+      try {
+        const subscriptionsSnapshot = await getDocs(collection(db, "subscriptions"));
+        // حساب عدد المستخدمين الفريدين الذين لديهم اشتراكات صالحة
+        const now = new Date();
+        const uniqueUsers = new Set<string>();
+        subscriptionsSnapshot.docs.forEach(doc => {
+          const subscription = doc.data();
+          if (subscription.endDate) {
+            const endDate = subscription.endDate.toDate ? subscription.endDate.toDate() : new Date(subscription.endDate);
+            if (endDate > now) {
+              uniqueUsers.add(subscription.userId);
+            }
+          }
+        });
+        activeStudents = uniqueUsers.size;
+      } catch (error) {
+        console.error("Error fetching subscriptions:", error);
+        // إذا فشل، نجرب جلب عدد المستخدمين من collection users
+        try {
+          const usersSnapshot = await getDocs(collection(db, "users"));
+          activeStudents = usersSnapshot.size;
+        } catch (err) {
+          console.error("Error fetching users:", err);
+        }
+      }
+
+      console.log("Stats fetched:", { videosCount, coursesCount, testsCount, activeStudents });
+      
+      // تحديث البيانات مع التأكد من القيم
+      setStatsData({
+        videosCount: videosCount || 0,
+        coursesCount: coursesCount || 0,
+        testsCount: testsCount || 0,
+        activeStudents: activeStudents || 0,
+      });
+      
+      console.log("Stats data updated:", { videosCount, coursesCount, testsCount, activeStudents });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
     }
   };
 
@@ -74,12 +198,32 @@ export default function Home() {
     },
   ];
 
-  const stats = [
-    { icon: Users, value: "500+", label: "طالب نشط", color: "text-blue-600 dark:text-blue-400" },
-    { icon: Video, value: "100+", label: "فيديو تعليمي", color: "text-green-600 dark:text-green-400" },
-    { icon: BookOpen, value: "50+", label: "كورس متخصص", color: "text-purple-600 dark:text-purple-400" },
-    { icon: Award, value: "95%", label: "نسبة النجاح", color: "text-yellow-600 dark:text-yellow-400" },
-  ];
+  const stats = useMemo(() => [
+    { 
+      icon: Users, 
+      value: statsData.activeStudents > 0 ? `${statsData.activeStudents}+` : "500+", 
+      label: "طالب نشط", 
+      color: "text-blue-600 dark:text-blue-400" 
+    },
+    { 
+      icon: Video, 
+      value: statsData.videosCount > 0 ? `${statsData.videosCount}+` : "100+", 
+      label: "فيديو تعليمي", 
+      color: "text-green-600 dark:text-green-400" 
+    },
+    { 
+      icon: BookOpen, 
+      value: statsData.coursesCount > 0 ? `${statsData.coursesCount}+` : "0", 
+      label: "كورس متخصص", 
+      color: "text-purple-600 dark:text-purple-400" 
+    },
+    { 
+      icon: FileText, 
+      value: statsData.testsCount > 0 ? `${statsData.testsCount}+` : "0", 
+      label: "اختبار تفاعلي", 
+      color: "text-yellow-600 dark:text-yellow-400" 
+    },
+  ], [statsData]);
 
   const benefits = [
     {
@@ -270,6 +414,9 @@ export default function Home() {
                         <div className="relative w-full h-full">
                           <Image
                             src="/images/alaaabdahab.png"
+                            loading="eager"
+                            priority
+                            quality={90}
                             alt="علاء أبو الدهب"
                             width={500}
                             height={500}
@@ -677,6 +824,455 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Courses Section */}
+      <section className="py-20 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: false }}
+              transition={{ type: "spring", delay: 0.2 }}
+              className="inline-block mb-4"
+            >
+              <GraduationCap className="h-12 w-12 text-primary-600 dark:text-primary-400 mx-auto" />
+            </motion.div>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              الكورسات المتخصصة
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400">
+              كورسات شاملة ومتكاملة لتعلم اللغة الإنجليزية باحترافية
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* كورس جرامر */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+            >
+              {/* Background Pattern */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/20 dark:bg-blue-700/20 rounded-bl-full blur-2xl group-hover:bg-blue-300/30 transition-colors" />
+              
+              <div className="relative z-10">
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.5 }}
+                  className="inline-block mb-6"
+                >
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 w-16 h-16 rounded-xl flex items-center justify-center shadow-lg">
+                    <BookText className="h-8 w-8 text-white" />
+                  </div>
+                </motion.div>
+                
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  كورس جرامر
+                </h3>
+                
+                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                  كورس شامل ومتكامل لتعلم قواعد اللغة الإنجليزية من الصفر إلى الاحتراف. يتضمن شرحاً مفصلاً لجميع القواعد الأساسية والمتقدمة.
+                </p>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">شرح مفصل لجميع قواعد اللغة الإنجليزية</span>
+                  </div>
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">أمثلة عملية وتطبيقات متنوعة</span>
+                  </div>
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">تمارين تفاعلية لتعزيز الفهم</span>
+                  </div>
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">مناسب للمبتدئين والمتقدمين</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 space-x-reverse text-blue-600 dark:text-blue-400 font-semibold">
+                  <Clock className="h-5 w-5" />
+                  <span>مدة الكورس: 40+ ساعة</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* كورس القصة */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-2xl p-8 border border-purple-200 dark:border-purple-800 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+            >
+              {/* Background Pattern */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200/20 dark:bg-purple-700/20 rounded-bl-full blur-2xl group-hover:bg-purple-300/30 transition-colors" />
+              
+              <div className="relative z-10">
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.5 }}
+                  className="inline-block mb-6"
+                >
+                  <div className="bg-gradient-to-br from-purple-500 to-purple-600 w-16 h-16 rounded-xl flex items-center justify-center shadow-lg">
+                    <BookMarked className="h-8 w-8 text-white" />
+                  </div>
+                </motion.div>
+                
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  كورس القصة
+                </h3>
+                
+                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                  كورس متخصص في تحليل وفهم القصص الإنجليزية. يساعدك على تطوير مهارات القراءة والفهم من خلال قصص متنوعة ومشوقة.
+                </p>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">تحليل قصص إنجليزية متنوعة ومشوقة</span>
+                  </div>
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">تطوير مهارات القراءة والفهم</span>
+                  </div>
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">شرح المفردات والتعبيرات المستخدمة</span>
+                  </div>
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">تمارين على الفهم والتحليل</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 space-x-reverse text-purple-600 dark:text-purple-400 font-semibold">
+                  <Clock className="h-5 w-5" />
+                  <span>مدة الكورس: 30+ ساعة</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* كورس حل الأسئلة */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-2xl p-8 border border-green-200 dark:border-green-800 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+            >
+              {/* Background Pattern */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-200/20 dark:bg-green-700/20 rounded-bl-full blur-2xl group-hover:bg-green-300/30 transition-colors" />
+              
+              <div className="relative z-10">
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.5 }}
+                  className="inline-block mb-6"
+                >
+                  <div className="bg-gradient-to-br from-green-500 to-green-600 w-16 h-16 rounded-xl flex items-center justify-center shadow-lg">
+                    <PenTool className="h-8 w-8 text-white" />
+                  </div>
+                </motion.div>
+                
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  كورس حل الأسئلة
+                </h3>
+                
+                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                  كورس عملي يركز على حل الأسئلة والتمارين المختلفة. يساعدك على إتقان فن حل الأسئلة بطرق صحيحة وفعالة.
+                </p>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">حل أسئلة متنوعة من امتحانات سابقة</span>
+                  </div>
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">شرح استراتيجيات حل الأسئلة</span>
+                  </div>
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">تمارين تطبيقية على كل نوع من الأسئلة</span>
+                  </div>
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">نصائح وحيل لتحسين الأداء في الامتحانات</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 space-x-reverse text-green-600 dark:text-green-400 font-semibold">
+                  <Clock className="h-5 w-5" />
+                  <span>مدة الكورس: 35+ ساعة</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: false }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="text-center mt-12"
+          >
+            <Link href="/videos">
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl transition-all duration-300 flex items-center space-x-2 space-x-reverse mx-auto w-fit"
+              >
+                <span>استكشف جميع الكورسات</span>
+                <ArrowLeft className="h-5 w-5" />
+              </motion.button>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Educational Levels Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: false }}
+              transition={{ type: "spring", delay: 0.2 }}
+              className="inline-block mb-4"
+            >
+              <School className="h-12 w-12 text-primary-600 dark:text-primary-400 mx-auto" />
+            </motion.div>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              المراحل التعليمية
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400">
+              محتوى تعليمي مخصص للمرحلة الإعدادية والثانوية
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* المرحلة الإعدادية */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl p-8 border-2 border-orange-200 dark:border-orange-800 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group"
+            >
+              {/* Background Gradient */}
+              <div className="absolute top-0 right-0 w-full h-2 bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700" />
+              
+              {/* Decorative Elements */}
+              <div className="absolute top-0 left-0 w-40 h-40 bg-orange-100/30 dark:bg-orange-900/20 rounded-full blur-3xl group-hover:bg-orange-200/40 transition-colors" />
+              
+              <div className="relative z-10">
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.5 }}
+                  className="inline-block mb-6"
+                >
+                  <div className="bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg">
+                    <BookCheck className="h-10 w-10 text-white" />
+                  </div>
+                </motion.div>
+                
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                  المرحلة الإعدادية
+                </h3>
+                
+                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed text-lg">
+                  محتوى تعليمي شامل ومتكامل مصمم خصيصاً لطلاب المرحلة الإعدادية. يساعد الطلاب على بناء أساس قوي في اللغة الإنجليزية.
+                </p>
+                
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-start space-x-3 space-x-reverse">
+                    <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg mt-0.5">
+                      <CheckCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">قواعد اللغة الأساسية</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">شرح مبسط للقواعد الأساسية مع أمثلة واضحة</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 space-x-reverse">
+                    <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg mt-0.5">
+                      <CheckCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">المفردات والتعبيرات</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">تعلم مفردات مهمة وتعبيرات شائعة الاستخدام</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 space-x-reverse">
+                    <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg mt-0.5">
+                      <CheckCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">مهارات القراءة والكتابة</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">تطوير مهارات القراءة والكتابة بشكل تدريجي</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 space-x-reverse">
+                    <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg mt-0.5">
+                      <CheckCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">تمارين تفاعلية</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">تمارين متنوعة لتعزيز الفهم والتطبيق</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center space-x-2 space-x-reverse text-orange-600 dark:text-orange-400">
+                    <Video className="h-5 w-5" />
+                    <span className="font-semibold">فيديوهات تعليمية</span>
+                  </div>
+                  <div className="flex items-center space-x-2 space-x-reverse text-orange-600 dark:text-orange-400">
+                    <FileText className="h-5 w-5" />
+                    <span className="font-semibold">اختبارات</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* المرحلة الثانوية */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl p-8 border-2 border-indigo-200 dark:border-indigo-800 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group"
+            >
+              {/* Background Gradient */}
+              <div className="absolute top-0 right-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700" />
+              
+              {/* Decorative Elements */}
+              <div className="absolute top-0 left-0 w-40 h-40 bg-indigo-100/30 dark:bg-indigo-900/20 rounded-full blur-3xl group-hover:bg-indigo-200/40 transition-colors" />
+              
+              <div className="relative z-10">
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.5 }}
+                  className="inline-block mb-6"
+                >
+                  <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700 w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg">
+                    <GraduationCap className="h-10 w-10 text-white" />
+                  </div>
+                </motion.div>
+                
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                  المرحلة الثانوية
+                </h3>
+                
+                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed text-lg">
+                  محتوى متقدم ومتخصص لطلاب المرحلة الثانوية. يركز على التحضير للامتحانات النهائية والجامعة مع تعميق الفهم.
+                </p>
+                
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-start space-x-3 space-x-reverse">
+                    <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg mt-0.5">
+                      <CheckCircle className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">قواعد متقدمة</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">شرح متعمق للقواعد المتقدمة والمعقدة</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 space-x-reverse">
+                    <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg mt-0.5">
+                      <CheckCircle className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">تحليل النصوص</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">تعلم تحليل النصوص الأدبية والعلمية</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 space-x-reverse">
+                    <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg mt-0.5">
+                      <CheckCircle className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">التحضير للامتحانات</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">تدريبات شاملة على نماذج الامتحانات</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 space-x-reverse">
+                    <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg mt-0.5">
+                      <CheckCircle className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">مهارات متقدمة</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">تطوير مهارات الكتابة الأكاديمية والتحليلية</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center space-x-2 space-x-reverse text-indigo-600 dark:text-indigo-400">
+                    <Video className="h-5 w-5" />
+                    <span className="font-semibold">فيديوهات متقدمة</span>
+                  </div>
+                  <div className="flex items-center space-x-2 space-x-reverse text-indigo-600 dark:text-indigo-400">
+                    <FileText className="h-5 w-5" />
+                    <span className="font-semibold">اختبارات شاملة</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: false }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-center mt-12"
+          >
+            <Link href="/videos">
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl transition-all duration-300 flex items-center space-x-2 space-x-reverse mx-auto w-fit"
+              >
+                <span>استكشف المحتوى التعليمي</span>
+                <ArrowLeft className="h-5 w-5" />
+              </motion.button>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Social Media Section */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -715,7 +1311,7 @@ export default function Home() {
               {
                 name: "Facebook",
                 icon: Facebook,
-                href: "#", // سيتم تحديثه لاحقاً
+                href: "https://www.facebook.com/share/1J3UsXXjNy/?mibextid=wwXIf",
                 color: "from-blue-500 to-blue-600",
                 hoverColor: "hover:from-blue-600 hover:to-blue-700",
                 bgColor: "bg-blue-50 dark:bg-blue-900/20",
@@ -724,7 +1320,7 @@ export default function Home() {
               {
                 name: "YouTube",
                 icon: Youtube,
-                href: "#", // سيتم تحديثه لاحقاً
+                href: "https://www.youtube.com/@AlaaAboElDahab",
                 color: "from-red-500 to-red-600",
                 hoverColor: "hover:from-red-600 hover:to-red-700",
                 bgColor: "bg-red-50 dark:bg-red-900/20",
@@ -733,7 +1329,7 @@ export default function Home() {
               {
                 name: "Instagram",
                 icon: Instagram,
-                href: "#", // سيتم تحديثه لاحقاً
+                href: "https://www.instagram.com/alaaabodahab?igsh=MTJlY3FtOW8yNndh",
                 color: "from-pink-500 to-purple-600",
                 hoverColor: "hover:from-pink-600 hover:to-purple-700",
                 bgColor: "bg-pink-50 dark:bg-pink-900/20",
@@ -742,7 +1338,7 @@ export default function Home() {
               {
                 name: "WhatsApp",
                 icon: MessageCircle,
-                href: "#", // سيتم تحديثه لاحقاً
+                href: "https://wa.me/201152513088",
                 color: "from-green-500 to-green-600",
                 hoverColor: "hover:from-green-600 hover:to-green-700",
                 bgColor: "bg-green-50 dark:bg-green-900/20",
@@ -869,6 +1465,8 @@ export default function Home() {
                     width={400}
                     height={400}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    quality={85}
                   />
                 </div>
               </motion.div>

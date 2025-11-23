@@ -11,12 +11,57 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "علاء أبو الدهب - مدرس لغة إنجليزية",
-  description: "موقع تعليمي متخصص في اللغة الإنجليزية للمرحلة الإعدادية والثانوية",
+  title: {
+    default: "علاء أبو الدهب - مدرس لغة إنجليزية",
+    template: "%s | علاء أبو الدهب",
+  },
+  description: "موقع تعليمي متخصص في اللغة الإنجليزية للمرحلة الإعدادية والثانوية. فيديوهات تعليمية، كورسات متخصصة، واختبارات تفاعلية",
+  keywords: ["تعليم إنجليزي", "لغة إنجليزية", "مرحلة إعدادية", "مرحلة ثانوية", "كورسات إنجليزية", "فيديوهات تعليمية"],
+  authors: [{ name: "علاء أبو الدهب" }],
+  creator: "علاء أبو الدهب",
+  publisher: "علاء أبو الدهب",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ar_EG',
+    url: '/',
+    title: 'علاء أبو الدهب - مدرس لغة إنجليزية',
+    description: 'موقع تعليمي متخصص في اللغة الإنجليزية للمرحلة الإعدادية والثانوية',
+    siteName: 'علاء أبو الدهب',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'علاء أبو الدهب - مدرس لغة إنجليزية',
+    description: 'موقع تعليمي متخصص في اللغة الإنجليزية للمرحلة الإعدادية والثانوية',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
   },
 };
 

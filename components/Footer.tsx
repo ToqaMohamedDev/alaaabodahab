@@ -1,36 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Facebook, Youtube, Instagram, Phone, Mail } from "lucide-react";
+import { Facebook, Youtube, Instagram, Phone, Mail, MessageCircle } from "lucide-react";
 
 const Footer = () => {
-  const pathname = usePathname();
-  const isAuthPage = pathname?.startsWith("/auth");
-  
-  if (isAuthPage) {
-    return null;
-  }
-
   const socialLinks = [
     {
       name: "Facebook",
       icon: Facebook,
-      href: "#", // سيتم تحديثه لاحقاً
+      href: "https://www.facebook.com/share/1J3UsXXjNy/?mibextid=wwXIf",
       color: "hover:text-blue-600",
     },
     {
       name: "YouTube",
       icon: Youtube,
-      href: "#", // سيتم تحديثه لاحقاً
+      href: "https://www.youtube.com/@AlaaAboElDahab",
       color: "hover:text-red-600",
     },
     {
       name: "Instagram",
       icon: Instagram,
-      href: "#", // سيتم تحديثه لاحقاً
+      href: "https://www.instagram.com/alaaabodahab?igsh=MTJlY3FtOW8yNndh",
       color: "hover:text-pink-600",
+    },
+    {
+      name: "WhatsApp",
+      icon: MessageCircle,
+      href: "https://wa.me/201152513088",
+      color: "hover:text-green-600",
     },
   ];
 
@@ -51,7 +49,13 @@ const Footer = () => {
             </p>
             <div className="flex items-center space-x-2 space-x-reverse text-gray-400 dark:text-gray-500">
               <Phone className="h-4 w-4" />
-              <span>+20 XXX XXX XXXX</span>
+              <a 
+                href="tel:+201152513088" 
+                className="hover:text-white dark:hover:text-gray-300 transition-colors direction-ltr text-left"
+                dir="ltr"
+              >
+                +20 11 525 130 88
+              </a>
             </div>
           </motion.div>
 
@@ -117,7 +121,18 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 dark:border-gray-900 mt-8 pt-8 text-center text-gray-400 dark:text-gray-600">
-          <p>&copy; {new Date().getFullYear()} علاء أبو الدهب. جميع الحقوق محفوظة.</p>
+          <p>
+            &copy; {new Date().getFullYear()}{" "}
+            <a
+              href="https://www.facebook.com/share/1Bh4nUDwWT/?mibextid=wwXIfr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-400 dark:text-primary-500 hover:text-primary-300 dark:hover:text-primary-400 font-semibold transition-colors"
+            >
+              AlaaTaha
+            </a>
+            . جميع الحقوق محفوظة.
+          </p>
         </div>
       </div>
     </footer>

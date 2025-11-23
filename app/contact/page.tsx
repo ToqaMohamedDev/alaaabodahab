@@ -97,9 +97,10 @@ export default function ContactPage() {
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-1">الهاتف</h3>
                     <a 
                       href="tel:+201152513088" 
-                      className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors font-medium text-lg"
+                      className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors font-medium text-lg direction-ltr text-left"
+                      dir="ltr"
                     >
-                      ٠١١ ٥٢٥ ١٣٠ ٨٨
+                      +20 11 525 130 88
                     </a>
                   </div>
                 </motion.div>

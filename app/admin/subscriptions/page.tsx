@@ -53,6 +53,7 @@ export default function SubscriptionsManagement() {
   const [formData, setFormData] = useState({
     userId: "",
     educationalLevelId: "",
+    months: 1,
   });
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -243,10 +244,10 @@ export default function SubscriptionsManagement() {
         }
       }
 
-      // حساب تاريخ الانتهاء (3 أشهر من الآن)
+      // حساب تاريخ الانتهاء بناءً على عدد الأشهر المختار
       const now = Timestamp.now();
       const endsAtDate = new Date(now.toMillis());
-      endsAtDate.setMonth(endsAtDate.getMonth() + 3);
+      endsAtDate.setMonth(endsAtDate.getMonth() + formData.months);
       const endsAt = Timestamp.fromDate(endsAtDate);
 
       if (editingSubscription?.id) {
@@ -286,6 +287,7 @@ export default function SubscriptionsManagement() {
         setFormData({
           userId: "",
           educationalLevelId: "",
+          months: 1,
         });
         setSuccessMessage("");
         fetchData();
@@ -298,9 +300,16 @@ export default function SubscriptionsManagement() {
 
   const handleEdit = (subscription: Subscription) => {
     setEditingSubscription(subscription);
+    // حساب عدد الأشهر من تاريخ البداية والانتهاء
+    const startDate = subscription.startsAt.toDate();
+    const endDate = subscription.endsAt.toDate();
+    const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                       (endDate.getMonth() - startDate.getMonth());
+    
     setFormData({
       userId: subscription.userId,
       educationalLevelId: subscription.educationalLevelId,
+      months: monthsDiff > 0 ? monthsDiff : 1,
     });
     setErrorMessage("");
     setSuccessMessage("");
@@ -325,6 +334,7 @@ export default function SubscriptionsManagement() {
     setFormData({
       userId: "",
       educationalLevelId: "",
+      months: 1,
     });
     setErrorMessage("");
     setSuccessMessage("");
@@ -549,13 +559,29 @@ export default function SubscriptionsManagement() {
                     </select>
                   </div>
 
-                  {!editingSubscription && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <p className="text-blue-800 dark:text-blue-300 text-sm">
-                        <strong>ملاحظة:</strong> سيتم إنشاء اشتراك لمدة 3 أشهر تبدأ من الآن تلقائياً.
-                      </p>
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      مدة الاشتراك (بالشهر) <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      required
+                      value={formData.months}
+                      onChange={(e) => {
+                        setFormData({ ...formData, months: parseInt(e.target.value) });
+                        setErrorMessage("");
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                        <option key={month} value={month}>
+                          {month} {month === 1 ? "شهر" : "شهر"}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                      يمكنك اختيار مدة الاشتراك من شهر واحد حتى سنة كاملة (12 شهر)
+                    </p>
+                  </div>
 
                   <div className="flex space-x-2 space-x-reverse justify-end pt-4">
                     <button

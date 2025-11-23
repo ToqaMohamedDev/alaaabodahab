@@ -99,44 +99,63 @@ const Navbar = () => {
 
   return (
     <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 sticky top-0 z-50 border-b border-gray-200 dark:border-gray-700"
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg dark:shadow-gray-900/50 sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center space-x-2 space-x-reverse">
+        <div className="flex justify-between items-center h-20">
+          <Link href="/" className="flex items-center space-x-3 space-x-reverse group">
             <motion.div
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.15, rotate: 5 }}
               whileTap={{ scale: 0.9 }}
+              className="relative"
             >
-              <BookOpen className="h-8 w-8 text-primary-600" />
+              <div className="absolute inset-0 bg-primary-600/20 rounded-lg blur-lg group-hover:bg-primary-600/30 transition-colors" />
+              <BookOpen className="h-9 w-9 text-primary-600 dark:text-primary-400 relative z-10 drop-shadow-sm" />
             </motion.div>
-            <span className="text-xl font-bold text-primary-700 dark:text-primary-400">
-              علاء أبو الدهب
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary-700 to-primary-600 dark:from-primary-400 dark:to-primary-300 bg-clip-text text-transparent group-hover:from-primary-600 group-hover:to-primary-500 dark:group-hover:from-primary-300 dark:group-hover:to-primary-200 transition-all">
+                علاء أبو الدهب
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                تعليم اللغة الإنجليزية
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-2 space-x-reverse">
-            <div className="flex space-x-1 space-x-reverse">
-              {(isAdmin ? adminNavItems : navItems).map((item) => {
+          <div className="hidden md:flex items-center space-x-3 space-x-reverse">
+            <div className="flex items-center space-x-1 space-x-reverse bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-1.5 border border-gray-200/50 dark:border-gray-700/50">
+              {(isAdmin ? adminNavItems : navItems).map((item, index) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
                 <Link key={item.href} href={item.href}>
                   <motion.div
-                    whileHover={{ scale: 1.05 }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`flex items-center space-x-1 space-x-reverse px-4 py-2 rounded-lg transition-all duration-200 ${
+                    className={`relative flex items-center space-x-2 space-x-reverse px-4 py-2.5 rounded-lg transition-all duration-300 ${
                       isActive
-                        ? "bg-primary-600 dark:bg-primary-700 text-white shadow-md"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700"
+                        ? "bg-primary-600 dark:bg-primary-700 text-white shadow-lg shadow-primary-500/30 dark:shadow-primary-700/30"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700/50 hover:text-primary-600 dark:hover:text-primary-400"
                     }`}
                   >
-                    <Icon className="h-4 w-4" />
-                    <span className="text-sm font-medium">{item.label}</span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 bg-primary-600 dark:bg-primary-700 rounded-lg"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                    <Icon className={`h-4 w-4 relative z-10 ${isActive ? "text-white" : ""}`} />
+                    <span className={`text-sm font-semibold relative z-10 ${isActive ? "text-white" : ""}`}>
+                      {item.label}
+                    </span>
                   </motion.div>
                 </Link>
               );
@@ -145,25 +164,28 @@ const Navbar = () => {
 
             {/* Login/Profile Button */}
             {!loading && (
-              <Link href={user ? "/profile" : "/auth/login"} className="ml-4">
+              <Link href={user ? "/profile" : "/auth/login"}>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`flex items-center space-x-2 space-x-reverse px-4 py-2 rounded-lg transition-all duration-200 ${
+                  className={`relative flex items-center space-x-2 space-x-reverse px-5 py-2.5 rounded-xl transition-all duration-300 overflow-hidden group ${
                     user
-                      ? "bg-primary-600 dark:bg-primary-700 text-white shadow-md hover:bg-primary-700 dark:hover:bg-primary-600"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      ? "bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white shadow-lg shadow-primary-500/30 dark:shadow-primary-700/30"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
                   }`}
                 >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"
+                  />
                   {user ? (
                     <>
-                      <User className="h-4 w-4" />
-                      <span className="text-sm font-medium">البروفايل</span>
+                      <User className="h-4 w-4 relative z-10" />
+                      <span className="text-sm font-semibold relative z-10">البروفايل</span>
                     </>
                   ) : (
                     <>
-                      <LogIn className="h-4 w-4" />
-                      <span className="text-sm font-medium">تسجيل الدخول</span>
+                      <LogIn className="h-4 w-4 relative z-10" />
+                      <span className="text-sm font-semibold relative z-10">تسجيل الدخول</span>
                     </>
                   )}
                 </motion.button>
@@ -299,17 +321,17 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-2 space-x-reverse">
+          <div className="md:hidden flex items-center space-x-3 space-x-reverse">
             {/* Login/Profile Button for Mobile */}
             {!loading && (
               <Link href={user ? "/profile" : "/auth/login"}>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`p-2 rounded-md transition-all duration-200 ${
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className={`p-2.5 rounded-xl transition-all duration-300 ${
                     user
-                      ? "bg-primary-600 dark:bg-primary-700 text-white"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      ? "bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white shadow-lg shadow-primary-500/30"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700"
                   }`}
                 >
                   {user ? <User className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
@@ -324,53 +346,53 @@ const Navbar = () => {
                 e.stopPropagation();
                 handleToggle();
               }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative w-12 h-6 rounded-full bg-gray-200 dark:bg-gray-700 p-1 transition-colors duration-300 cursor-pointer z-10 overflow-hidden"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="relative w-14 h-7 rounded-full cursor-pointer z-10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 overflow-hidden"
               aria-label="Toggle theme"
               type="button"
             >
-              <div className="absolute inset-0 rounded-full bg-gradient-to-b from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-800 shadow-inner border border-gray-400/20 dark:border-gray-600/20 pointer-events-none z-10" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-gray-300 via-gray-200 to-gray-300 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.25)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)] border border-gray-400/30 dark:border-gray-600/30" />
               <motion.div
-                layout
+                initial={false}
+                animate={{
+                  x: currentTheme === "dark" ? 28 : 0,
+                }}
                 transition={{
                   type: "spring",
-                  stiffness: 500,
-                  damping: 30
+                  stiffness: 400,
+                  damping: 35,
                 }}
-                className={`relative w-4 h-4 rounded-full shadow-lg pointer-events-none z-20 ${
-                  currentTheme === "dark"
-                    ? "bg-gradient-to-br from-yellow-400 to-yellow-500"
-                    : "bg-gradient-to-br from-gray-50 to-gray-100"
-                }`}
-                style={{
-                  x: currentTheme === "dark" ? 20 : 0,
-                }}
+                className="relative w-5 h-5 rounded-full"
               >
-                <div className="absolute inset-0 rounded-full bg-white/30 dark:bg-yellow-300/30 blur-sm" />
                 <motion.div
-                  initial={false}
                   animate={{
-                    rotate: currentTheme === "dark" ? 0 : 180,
+                    background: currentTheme === "dark" 
+                      ? "linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)"
+                      : "linear-gradient(135deg, #f9fafb 0%, #e5e7eb 50%, #d1d5db 100%)",
                   }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute inset-0 flex items-center justify-center"
+                  transition={{ duration: 0.4 }}
+                  className="absolute inset-0 rounded-full border-2 border-white/40 dark:border-yellow-200/30 shadow-lg"
                 >
-                  {currentTheme === "dark" ? (
-                    <Sun className="h-2.5 w-2.5 text-yellow-900" fill="currentColor" />
-                  ) : (
-                    <Moon className="h-2.5 w-2.5 text-gray-600" fill="currentColor" />
-                  )}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {currentTheme === "dark" ? (
+                      <Sun className="h-3 w-3 text-yellow-900" fill="currentColor" />
+                    ) : (
+                      <Moon className="h-3 w-3 text-gray-600" fill="currentColor" />
+                    )}
+                  </div>
                 </motion.div>
               </motion.div>
             </motion.button>
             
-            <button
+            <motion.button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="p-2.5 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 border border-gray-200 dark:border-gray-700"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
@@ -381,10 +403,11 @@ const Navbar = () => {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
-          className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+          transition={{ duration: 0.3 }}
+          className="md:hidden border-t border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md"
         >
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            {(isAdmin ? adminNavItems : navItems).map((item) => {
+          <div className="px-4 pt-4 pb-6 space-y-2">
+            {(isAdmin ? adminNavItems : navItems).map((item, index) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
@@ -393,16 +416,20 @@ const Navbar = () => {
                   href={item.href}
                   onClick={() => setIsOpen(false)}
                 >
-                  <div
-                    className={`flex items-center space-x-2 space-x-reverse px-3 py-2 rounded-lg transition-all duration-200 ${
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ x: 5 }}
+                    className={`flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all duration-300 ${
                       isActive
-                        ? "bg-primary-600 dark:bg-primary-700 text-white shadow-md"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        ? "bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white shadow-lg shadow-primary-500/30"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.label}</span>
-                  </div>
+                    <Icon className={`h-5 w-5 ${isActive ? "text-white" : ""}`} />
+                    <span className={`font-semibold ${isActive ? "text-white" : ""}`}>{item.label}</span>
+                  </motion.div>
                 </Link>
               );
             })}
@@ -412,25 +439,29 @@ const Navbar = () => {
                 href={user ? "/profile" : "/auth/login"}
                 onClick={() => setIsOpen(false)}
               >
-                <div
-                  className={`flex items-center space-x-2 space-x-reverse px-3 py-2 rounded-lg transition-all duration-200 ${
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: (isAdmin ? adminNavItems : navItems).length * 0.05 }}
+                  whileHover={{ x: 5 }}
+                  className={`flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all duration-300 ${
                     pathname === "/profile" || pathname === "/auth/login"
-                      ? "bg-primary-600 dark:bg-primary-700 text-white shadow-md"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      ? "bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white shadow-lg shadow-primary-500/30"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
                   }`}
                 >
                   {user ? (
                     <>
                       <User className="h-5 w-5" />
-                      <span>البروفايل</span>
+                      <span className="font-semibold">البروفايل</span>
                     </>
                   ) : (
                     <>
                       <LogIn className="h-5 w-5" />
-                      <span>تسجيل الدخول</span>
+                      <span className="font-semibold">تسجيل الدخول</span>
                     </>
                   )}
-                </div>
+                </motion.div>
               </Link>
             )}
           </div>
