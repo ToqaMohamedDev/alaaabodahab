@@ -159,29 +159,29 @@ const Navbar = () => {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          <Link href="/" className="flex items-center space-x-3 space-x-reverse group">
+        <div className="flex justify-between items-center h-16 sm:h-20 md:h-24">
+          <Link href="/" className="flex items-center space-x-3 sm:space-x-4 space-x-reverse group">
             <motion.div
               whileHover={{ scale: 1.15, rotate: 5 }}
               whileTap={{ scale: 0.9 }}
               className="relative"
             >
               <div className="absolute inset-0 bg-primary-600/20 rounded-lg blur-lg group-hover:bg-primary-600/30 transition-colors" />
-              <BookOpen className="h-9 w-9 text-primary-600 dark:text-primary-400 relative z-10 drop-shadow-sm" />
+              <BookOpen className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 text-primary-600 dark:text-primary-400 relative z-10 drop-shadow-sm" />
             </motion.div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold bg-gradient-to-r from-primary-700 to-primary-600 dark:from-primary-400 dark:to-primary-300 bg-clip-text text-transparent group-hover:from-primary-600 group-hover:to-primary-500 dark:group-hover:from-primary-300 dark:group-hover:to-primary-200 transition-all">
+              <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-primary-700 to-primary-600 dark:from-primary-400 dark:to-primary-300 bg-clip-text text-transparent group-hover:from-primary-600 group-hover:to-primary-500 dark:group-hover:from-primary-300 dark:group-hover:to-primary-200 transition-all">
                 علاء أبو الدهب
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
                 تعليم اللغة الإنجليزية
               </span>
             </div>
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-3 space-x-reverse">
-            <div className="flex items-center space-x-1 space-x-reverse bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-1.5 border border-gray-200/50 dark:border-gray-700/50">
+          <div className="hidden md:flex items-center space-x-4 space-x-reverse">
+            <div className="flex items-center space-x-2 space-x-reverse bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-2 border border-gray-200/50 dark:border-gray-700/50">
               {(isAdmin ? adminNavItems : navItems).map((item, index) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -193,7 +193,7 @@ const Navbar = () => {
                     transition={{ delay: index * 0.05 }}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`relative flex items-center space-x-2 space-x-reverse px-4 py-2.5 rounded-lg transition-all duration-300 ${
+                    className={`relative flex items-center space-x-2 space-x-reverse px-5 py-3 rounded-lg transition-all duration-300 ${
                       isActive
                         ? "bg-primary-600 dark:bg-primary-700 text-white shadow-lg shadow-primary-500/30 dark:shadow-primary-700/30"
                         : "text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700/50 hover:text-primary-600 dark:hover:text-primary-400"
@@ -206,8 +206,8 @@ const Navbar = () => {
                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                       />
                     )}
-                    <Icon className={`h-4 w-4 relative z-10 ${isActive ? "text-white" : ""}`} />
-                    <span className={`text-sm font-semibold relative z-10 ${isActive ? "text-white" : ""}`}>
+                    <Icon className={`h-4 w-4 md:h-5 md:w-5 relative z-10 ${isActive ? "text-white" : ""}`} />
+                    <span className={`text-sm md:text-base font-semibold relative z-10 ${isActive ? "text-white" : ""}`}>
                       {item.label}
                     </span>
                   </motion.div>
@@ -222,7 +222,7 @@ const Navbar = () => {
                 <motion.button
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`relative flex items-center space-x-2 space-x-reverse px-5 py-2.5 rounded-xl transition-all duration-300 overflow-hidden group ${
+                  className={`relative flex items-center space-x-2 space-x-reverse px-6 py-3 rounded-xl transition-all duration-300 overflow-hidden group ${
                     user
                       ? "bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white shadow-lg shadow-primary-500/30 dark:shadow-primary-700/30"
                       : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
@@ -233,13 +233,13 @@ const Navbar = () => {
                   />
                   {user ? (
                     <>
-                      <User className="h-4 w-4 relative z-10" />
-                      <span className="text-sm font-semibold relative z-10">البروفايل</span>
+                      <User className="h-4 w-4 md:h-5 md:w-5 relative z-10" />
+                      <span className="text-sm md:text-base font-semibold relative z-10">البروفايل</span>
                     </>
                   ) : (
                     <>
-                      <LogIn className="h-4 w-4 relative z-10" />
-                      <span className="text-sm font-semibold relative z-10">تسجيل الدخول</span>
+                      <LogIn className="h-4 w-4 md:h-5 md:w-5 relative z-10" />
+                      <span className="text-sm md:text-base font-semibold relative z-10">تسجيل الدخول</span>
                     </>
                   )}
                 </motion.button>
@@ -255,7 +255,7 @@ const Navbar = () => {
               }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="relative ml-4 w-14 h-7 rounded-full cursor-pointer z-10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 overflow-hidden"
+              className="relative ml-4 md:ml-6 w-14 h-7 md:w-16 md:h-8 rounded-full cursor-pointer z-10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 overflow-hidden"
               aria-label="Toggle theme"
               type="button"
             >
@@ -375,7 +375,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-3 space-x-reverse">
+          <div className="md:hidden flex items-center space-x-4 space-x-reverse">
             {/* Dark Mode Toggle for Mobile */}
             <motion.button
               onClick={(e) => {
