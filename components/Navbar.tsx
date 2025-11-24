@@ -376,23 +376,6 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-3 space-x-reverse">
-            {/* Login/Profile Button for Mobile */}
-            {!loading && (
-              <Link href={user ? "/profile" : "/auth/login"}>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className={`p-2.5 rounded-xl transition-all duration-300 ${
-                    user
-                      ? "bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white shadow-lg shadow-primary-500/30"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700"
-                  }`}
-                >
-                  {user ? <User className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
-                </motion.button>
-              </Link>
-            )}
-            
             {/* Dark Mode Toggle for Mobile */}
             <motion.button
               onClick={(e) => {
