@@ -118,7 +118,7 @@ export default function RootLayout({
       <body className={cairo.className}>
         <ThemeProvider>
           <Navbar />
-          <main className="bg-gray-50 dark:bg-gray-900">{children}</main>
+          <main className="bg-gray-50 dark:bg-gray-900 pt-20">{children}</main>
           <Footer />
         </ThemeProvider>
       </body>
