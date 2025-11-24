@@ -2,11 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
-import { User, Mail, Award, BookOpen, TrendingUp, LogOut, Edit, MessageSquare, Calendar, Copy, Check } from "lucide-react";
+import { User, Mail, Award, BookOpen, TrendingUp, Edit, MessageSquare, Calendar, Copy, Check } from "lucide-react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, Timestamp } from "firebase/firestore";
-import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -368,14 +367,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      router.push("/");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
 
   if (loading || loadingData) {
     return (
@@ -504,15 +495,6 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleLogout}
-                  className="w-full mt-4 bg-red-600 dark:bg-red-700 text-white py-2 rounded-lg font-semibold hover:bg-red-700 dark:hover:bg-red-600 transition flex items-center justify-center space-x-2 space-x-reverse"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>تسجيل الخروج</span>
-                </motion.button>
               </div>
             </div>
           </motion.div>

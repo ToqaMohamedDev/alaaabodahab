@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Menu, X, BookOpen, Video, FileText, Mail, User, Home, Sun, Moon, LogIn, Shield } from "lucide-react";
+import { Menu, X, BookOpen, Video, FileText, Mail, User, Home, Sun, Moon, LogIn, Shield, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +20,7 @@ const Navbar = () => {
   const [user, loading] = useAuthState(auth);
   const [isAdmin, setIsAdmin] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const router = useRouter();
 
   // Sync with actual DOM state
   useEffect(() => {
@@ -121,6 +124,16 @@ const Navbar = () => {
     ...navItems,
     { href: "/admin/dashboard", label: "لوحة التحكم", icon: Shield },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setIsOpen(false);
+      router.push("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <motion.nav
@@ -476,34 +489,51 @@ const Navbar = () => {
             })}
             {/* Login/Profile in Mobile Menu */}
             {!loading && (
-              <Link
-                href={user ? "/profile" : "/auth/login"}
-                onClick={() => setIsOpen(false)}
-              >
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: (isAdmin ? adminNavItems : navItems).length * 0.05 }}
-                  whileHover={{ x: 5 }}
-                  className={`flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all duration-300 ${
-                    pathname === "/profile" || pathname === "/auth/login"
-                      ? "bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white shadow-lg shadow-primary-500/30"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
-                  }`}
+              <>
+                <Link
+                  href={user ? "/profile" : "/auth/login"}
+                  onClick={() => setIsOpen(false)}
                 >
-                  {user ? (
-                    <>
-                      <User className="h-5 w-5" />
-                      <span className="font-semibold">البروفايل</span>
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="h-5 w-5" />
-                      <span className="font-semibold">تسجيل الدخول</span>
-                    </>
-                  )}
-                </motion.div>
-              </Link>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (isAdmin ? adminNavItems : navItems).length * 0.05 }}
+                    whileHover={{ x: 5 }}
+                    className={`flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all duration-300 ${
+                      pathname === "/profile" || pathname === "/auth/login"
+                        ? "bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white shadow-lg shadow-primary-500/30"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                    }`}
+                  >
+                    {user ? (
+                      <>
+                        <User className="h-5 w-5" />
+                        <span className="font-semibold">البروفايل</span>
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="h-5 w-5" />
+                        <span className="font-semibold">تسجيل الدخول</span>
+                      </>
+                    )}
+                  </motion.div>
+                </Link>
+                
+                {/* Logout Button in Mobile Menu */}
+                {user && (
+                  <motion.button
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: ((isAdmin ? adminNavItems : navItems).length + 1) * 0.05 }}
+                    whileHover={{ x: 5 }}
+                    onClick={handleLogout}
+                    className="flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all duration-300 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full text-right"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span className="font-semibold">تسجيل الخروج</span>
+                  </motion.button>
+                )}
+              </>
             )}
           </div>
         </motion.div>
