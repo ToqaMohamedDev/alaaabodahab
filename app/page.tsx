@@ -352,23 +352,23 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-                className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start w-full sm:w-auto"
               >
-                <Link href="/videos">
+                <Link href="/videos" className="w-full sm:w-auto">
                   <motion.button
                     whileHover={{ scale: 1.05, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3)" }}
                     whileTap={{ scale: 0.95 }}
-                    className="bg-white text-primary-700 px-8 py-4 rounded-lg font-semibold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center space-x-2 space-x-reverse"
+                    className="bg-white text-primary-700 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all flex items-center justify-center space-x-2 space-x-reverse w-full sm:w-auto"
                   >
-                    <Play className="h-5 w-5" fill="currentColor" />
+                    <Play className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" />
                     <span>ابدأ التعلم الآن</span>
                   </motion.button>
                 </Link>
-                <Link href="/about">
+                <Link href="/about" className="w-full sm:w-auto">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-700 transition-all"
+                    className="bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-primary-700 transition-all w-full sm:w-auto"
                   >
                     تعرف علينا أكثر
                   </motion.button>
